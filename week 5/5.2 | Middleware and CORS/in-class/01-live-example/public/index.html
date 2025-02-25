@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CORS</title>
+    <script>
+      async function sendRequest() {
+        // fetch("http://localhost:3000/sum", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({
+        //     a: document.getElementById("a").value,
+        //     b: document.getElementById("b").value,
+        //   }),
+        // })
+        //   .then(function (response) {
+        //     return response.json();
+        //   })
+        //   .then(function (data) {
+        //     console.log(data);
+        //   });
+
+        axios.post("http://localhost:3000/sum", {
+          a: document.getElementById("a").value,
+          b: document.getElementById("b").value,
+        });
+      }
+
+      async function nextPage() {
+        axios.get("http://localhost:3000/next-page");
+      }
+    </script>
+  </head>
+  <body>
+    <h1>CORS Demonstration</h1>
+    <input id="a" type="text" placeholder="first-value" />
+    <input id="b" type="text" placeholder="second-value" />
+    <button onclick="sendRequest()">Find Sum</button>
+    <button onclick="nextPage()">Next Page</button>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth Flow</title>
+    <style>
+      body {
+        font-size: 20px;
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: antiquewhite;
+      }
+      .auth-flow {
+        height: 20vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+      }
+      .signin,
+      .signup {
+        margin-top: 10px;
+        width: 30vw;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Authentication Flow</h1>
+    <div class="auth-flow">
+      <div class="signup">
+        <label>Signup</label>
+        <input id="sign-up-username" type="text" placeholder="Username" />
+        <input id="sign-up-password" type="password" placeholder="Password" />
+        <button id="sign-up-btn">Sign up</button>
+      </div>
+
+      <div class="signin">
+        <label>Signin</label>
+        <input id="sign-in-username" type="text" placeholder="Username" />
+        <input id="sign-in-password" type="password" placeholder="Password" />
+        <button id="sign-in-btn">Sign In</button>
+      </div>
+
+      <div class="user-info">
+        <button id="get-info-btn">Get Info</button>
+        <p>User Info:</p>
+      </div>
+
+      <div class="logout">
+        <button id="logout-btn">Log Out</button>
+      </div>
+    </div>
+    <script>
+      const signUpBtn = document.getElementById("sign-up-btn");
+      const signInBtn = document.getElementById("sign-in-btn");
+      const getInfoBtn = document.getElementById("get-info-btn");
+      const logoutBtn = document.getElementById("logout-btn");
+
+      signUpBtn.addEventListener("click", function () {
+        const username = document.getElementById("sign-up-username").value;
+        const password = document.getElementById("sign-up-password").value;
+
+        fetch("http://localhost:3000/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }).then(function (respone) {
+          alert("Sign up Successful! Welcome");
+        });
+      });
+
+      signInBtn.addEventListener("click", function () {
+        const username = document.getElementById("sign-in-username").value;
+        const password = document.getElementById("sign-in-password").value;
+
+        fetch("http://localhost:3000/signin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            // it in a cookie/local session
+            localStorage.setItem("token", data.token);
+            alert("You are now signed in");
+          });
+      });
+
+      getInfoBtn.addEventListener("click", () => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          fetch("http://localhost:3000/me", {
+            method: "GET",
+            headers: { token },
+          })
+            .then((response) => {
+              return response.json();
+            })
+            .then((data) => {
+              console.log(data);
+            });
+        } else {
+          alert("you need to sign in first");
+        }
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        alert("You have been logged out!");
+      });
+    </script>
+  </body>
+</html>

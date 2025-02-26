@@ -1,12 +1,15 @@
 const express = require("express");
 const app = express();
 
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-
 const mongoose = require("mongoose");
 const { UserModel, TodoModel } = require("./db");
 const errors = require("./errors");
+
+const jwt = require("jsonwebtoken");
+
+const bcrypt = require("bcrypt");
+
+const { z } = require("zod");
 
 const chalk = require("chalk");
 const success = chalk.green;
@@ -16,6 +19,7 @@ const userSucess = chalk.yellowBright;
 require("dotenv").config();
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 (async function startDatabase() {
   try {
@@ -38,17 +42,41 @@ app.use(express.json());
 
 app.post("/signup", async function (req, res) {
   try {
-    const { email, password, name } = req.body;
+    // shit is going to boggle some heads
+    const payloadSchema = z.object({
+      email: z.string().email(),
+      password: z
+        .string()
+        .min(8)
+        .max(32)
+        .regex(/[A-Z]/, "must contain at least one uppercase letter")
+        .regex(/[a-z]/, "must contain at least one lowercase letter")
+        .regex(/[0-9]/, "must contain one numerical digit")
+        .regex(/[^a-zA-Z0-9]/, "must contain at least one special character"),
+      name: z.string().min(2).max(32),
+    });
 
-    if (!email || !password || !name) {
-      throw new errors.EmptyCredentialsError(
-        "user can not send empty fields for signup"
+    const { success, data } = payloadSchema.safeParse(req.body);
+
+    if (!success) {
+      throw new errors.InvalidCredentialsError(
+        "sign up fields did not match expected format"
       );
     }
 
+    const { email, password, name } = req.body;
+
+    // if (!email || !password || !name) {
+    //   throw new errors.EmptyCredentialsError(
+    //     "user can not send empty fields for signup"
+    //   );
+    // }
+
+    const hashedPassword = await bcrypt.hash(password, 5);
+
     await UserModel.create({
       email: email,
-      password,
+      password: hashedPassword,
       name: name,
     });
 
@@ -58,7 +86,10 @@ app.post("/signup", async function (req, res) {
 
     console.log(userSucess("User creation successful"));
   } catch (error) {
-    if (error instanceof errors.EmptyCredentialsError) {
+    if (error instanceof errors.InvalidCredentialsError) {
+      res.status(error.statusCode).json({ error: error.message });
+      console.log(fail("User creation failed\n") + error + "\n");
+    } else if (error instanceof errors.EmptyCredentialsError) {
       res.status(error.statusCode).json({ error: error.message });
       console.log(fail("User creation failed, empty credentials sent\n"));
     } else {
@@ -82,6 +113,12 @@ app.post("/signin", async (req, res, next) => {
       throw new errors.UserNotFoundError();
     }
 
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      throw new errors.InvalidCredentialsError("passwords no not match");
+    }
+
     const token = jwt.sign({ userId: user._id }, JWT_SECRET);
     res.setHeader("Authorization", token);
     res.setHeader("Access-Control-Expose-Headers", "Authorization");
@@ -96,6 +133,9 @@ app.post("/signin", async (req, res, next) => {
     } else if (error instanceof errors.UserNotFoundError) {
       res.status(error.statusCode).json({ error: error.message });
       console.log(fail("User sign in failed, no matching user found\n"));
+    } else if (error instanceof errors.InvalidCredentialsError) {
+      res.status(error.statusCode).json({ error: error.message });
+      console.log(fail("Failed to verify user\n") + error + "\n");
     } else {
       res.status(500).json({ error: "unable to sign-in user" });
       console.log(fail("User sign in failed\n", error.message, "\n"));

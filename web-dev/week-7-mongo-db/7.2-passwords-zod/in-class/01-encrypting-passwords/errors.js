@@ -23,8 +23,17 @@ class UserNotFoundError extends Error {
   }
 }
 
+class AuthorizationNotSentError extends Error {
+  constructor(message = "Authentication token not sent along the request") {
+    super(message);
+    this.name = "AuthorizationNotSentError";
+    this.statusCode = 404;
+  }
+}
+
 module.exports = {
   UserNotFoundError,
   InvalidCredentialsError,
   EmptyCredentialsError,
+  AuthorizationNotSentError,
 };

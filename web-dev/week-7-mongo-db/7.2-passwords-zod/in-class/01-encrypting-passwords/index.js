@@ -15,7 +15,7 @@ const userSucess = chalk.yellowBright;
 
 require("dotenv").config();
 const MONGO_URI = process.env.MONGO_URI;
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 (async function startDatabase() {
   try {
@@ -83,8 +83,8 @@ app.post("/signin", async (req, res, next) => {
     }
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-    res.setHeader("Authentication", token);
-    res.setHeader("Access-Control-Expose-Headers", "Authentication");
+    res.setHeader("Authorization", token);
+    res.setHeader("Access-Control-Expose-Headers", "Authorization");
 
     res.status(200).json({ success: "user is now signed in" });
 
@@ -103,4 +103,106 @@ app.post("/signin", async (req, res, next) => {
   }
 });
 
-// * continue designing the /todo routes tomorrow
+// designing an auth middleware for subsequent requests
+
+app.use((req, res, next) => {
+  try {
+    const token = req.headers.authorization;
+
+    if (!token) {
+      throw new errors.AuthorizationNotSentError();
+    }
+
+    const decodedInfo = jwt.verify(token, JWT_SECRET);
+    const userId = decodedInfo.userId;
+
+    req.body.userId = userId;
+    next();
+  } catch (e) {
+    if (e instanceof errors.AuthorizationNotSentError) {
+      res.status(e.statusCode).json({ error: e.message });
+      console.log(fail("Unable to authenticate user, token not sent\n"));
+    } else {
+      res.status(403).json({ error: "invalid authorization credentials" });
+      console.log(
+        fail("Unable to authenticate user, invalid authorization credentials\n")
+      );
+    }
+  }
+});
+
+app.post("/todo", async (req, res) => {
+  try {
+    const { description, status, userId } = req.body;
+
+    if (!userId) {
+      throw new errors.InvalidCredentialsError(
+        "authorization credentials are invalid"
+      );
+    }
+
+    if (!description || !status.toString()) {
+      throw new errors.EmptyCredentialsError();
+    }
+
+    const user = await UserModel.findOne({ _id: userId });
+
+    if (!user) {
+      throw new errors.UserNotFoundError();
+    }
+
+    await TodoModel.create({
+      description: description,
+      status: status,
+      userId: userId,
+    });
+
+    res.status(200).json({ success: "todo has been created" });
+    console.log(success("Todo has been created\n"));
+  } catch (e) {
+    if (e instanceof errors.InvalidCredentialsError) {
+      res.status(e.statusCode).json({ error: e.message });
+      console.log(fail("Unable to create todo\n", e.message));
+    } else if (e instanceof errors.EmptyCredentialsError) {
+      res.status(e.statusCode).json({ error: e.message });
+      console.log(fail("Unable to create todo\n", e.message));
+    } else if (e instanceof errors.UserNotFoundError) {
+      res.status(e.statusCode).json({ error: e.message });
+      console.log(fail("Unable to create todo\n", e.message));
+    } else {
+      res.status(500).json({ error: "failed to create todo" });
+      console.log(fail("Unable to create todo\n", e));
+    }
+  }
+});
+
+app.get("/todos", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      throw new errors.InvalidCredentialsError(
+        "authorization credentials are invalid"
+      );
+    }
+
+    const user = await UserModel.findOne({ _id: userId });
+
+    if (!user) {
+      throw new errors.UserNotFoundError();
+    }
+
+    const todos = await TodoModel.find({ userId: userId });
+
+    res.status(200).json({ success: todos });
+    console.log(success("Fetch todos for user successful\n"));
+  } catch (e) {
+    if (e instanceof errors.InvalidCredentialsError) {
+      res.status(e.statusCode).json({ error: e.message });
+      console.log(fail("Unable to fetch todos for user, credentials invalid"));
+    } else {
+      res.status(500).json({ error: "unable to fetch todos" });
+      console.log(fail(`Unable to fetch todos for user\n ${e}`));
+    }
+  }
+});

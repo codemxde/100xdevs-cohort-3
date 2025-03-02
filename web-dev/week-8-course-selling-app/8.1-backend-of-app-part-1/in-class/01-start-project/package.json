@@ -1,9 +1,9 @@
 {
-  "name": "01-start-project",
+  "name": "course-selling-application",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node main.js"
   },
   "keywords": [],
   "author": "",
@@ -11,10 +11,11 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "chalk": "^5.4.1",
+    "chalk": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.11.0"
+    "mongoose": "^8.11.0",
+    "zod": "^3.24.2"
   }
 }

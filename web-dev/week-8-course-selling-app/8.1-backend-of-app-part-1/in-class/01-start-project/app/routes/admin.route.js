@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const router = Router();
-const { Admin } = require("../../models/admin.model");
+const { Admin } = require("../models/admin.model");
 
 router.post("/signup", async (req, res) => {});
 

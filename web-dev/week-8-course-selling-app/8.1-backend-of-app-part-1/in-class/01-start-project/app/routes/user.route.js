@@ -5,11 +5,11 @@ const {
   validate,
   checkName,
   checkExisting,
-} = require("../../middlewares/input-validation/user.validate");
+} = require("../middlewares/input-validation/user.validate");
 
-const { encrypt, verify } = require("../../middlewares/hash");
+const { encrypt, verify } = require("../middlewares/hash");
 
-const { signup, signin } = require("../handlers/user.handler");
+const { signup, signin } = require("../controllers/user.controller");
 
 router.post("/signup", validate, checkName, encrypt, signup);
 

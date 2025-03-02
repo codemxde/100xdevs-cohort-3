@@ -3,11 +3,11 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const { User } = require("../../models/user.model");
+const { User } = require("../models/user.model");
 
-const { checkAndValidateErrors: handleError } = require("../../errors/catch");
+const { checkAndValidateErrors: handleError } = require("../errors/catch");
 
-const log = require("../../logger/logger");
+const log = require("../logger/logger");
 
 const signup = async (req, res) => {
   try {

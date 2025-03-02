@@ -1,5 +1,5 @@
 {
-  "name": "01-todo-app-backend",
+  "name": "01-start-project",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -10,9 +10,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "chalk": "^5.4.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.10.1"
+    "mongoose": "^8.11.0"
   }
 }

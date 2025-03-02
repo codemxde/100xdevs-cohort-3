@@ -1,13 +1,13 @@
 const express = require("express");
 const app = express();
 
+require("dotenv").config();
+
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "codemxde";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const mongoose = require("mongoose");
-mongoose.connect(
-  "mongodb+srv://codemxde:BSBiGCLXCEJ3hGtY@codemxde.u3izr.mongodb.net/todo-app-backend"
-);
+mongoose.connect(process.env.MONGO_URI);
 const { UserModel, TodoModel } = require("./db");
 
 app.use(express.json());

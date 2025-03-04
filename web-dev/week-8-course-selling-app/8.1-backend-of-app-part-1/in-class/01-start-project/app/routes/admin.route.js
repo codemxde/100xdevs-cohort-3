@@ -1,18 +1,31 @@
 const { Router } = require("express");
 const router = Router();
-const { Admin } = require("../models/admin.model");
 
-router.post("/signup", async (req, res) => {});
+const { authenticate } = require("../middlewares/authentication/admin.authenticate");
 
-router.post("/signin", async (req, res) => {});
+const { validate, checkName } = require("../middlewares/input-validation/common.validate");
 
-// add a course
-router.post("/course", async (req, res) => {});
+const {
+  validateCourse,
+  validateUpdate,
+} = require("../middlewares/input-validation/course.validate");
 
-// change course info/image/description etc.
-router.put("/course", async (req, res) => {});
+const { checkExisting } = require("../middlewares/input-validation/admin.validate");
 
-// give the admin all the courses they have created
-router.get("/course/all", async (req, res) => {});
+const { encrypt, verify } = require("../middlewares/encryption/admin.encryption");
+
+const { signup, signin, add, get, update } = require("../controllers/admin.controller");
+
+router.post("/signup", validate, checkName, encrypt, signup);
+
+router.post("/signin", validate, checkExisting, verify, signin);
+
+router.use(authenticate);
+
+router.post("/course", validateCourse, add);
+
+router.put("/course", validateUpdate, update);
+
+router.get("/course/all", get);
 
 module.exports = { router };

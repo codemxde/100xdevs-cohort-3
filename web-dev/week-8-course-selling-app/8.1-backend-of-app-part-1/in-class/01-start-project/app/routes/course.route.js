@@ -1,11 +1,24 @@
 const { Router } = require("express");
 const router = Router();
 
-const { Course } = require("../models/course.model");
-const { Purchase } = require("../models/purchase.model");
+const { authenticate } = require("../middlewares/authentication/user.authenticate");
 
-router.post("/purchase", async (req, res) => {});
+const {
+  validatePurchase,
+  courseExists,
+} = require("../middlewares/input-validation/course.validate");
 
-router.get("/preview", async (req, res) => {});
+const {
+  fetchCourses,
+  checkPreviousPurchase,
+} = require("../middlewares/database/purchases.database");
+
+const { purchase, preview } = require("../controllers/user.controller");
+
+router.use(authenticate);
+
+router.post("/purchase", validatePurchase, courseExists, checkPreviousPurchase, purchase);
+
+router.get("/preview", fetchCourses, preview);
 
 module.exports = { router };

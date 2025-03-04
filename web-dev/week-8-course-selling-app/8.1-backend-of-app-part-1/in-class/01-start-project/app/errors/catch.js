@@ -14,6 +14,15 @@ const checkAndValidateErrors = (error, res, custom) => {
     sendErrorResponse(error, res);
   } else if (error instanceof errors.UserNotFoundError) {
     sendErrorResponse(error, res);
+  } else if (error instanceof errors.AdminNotFoundError) {
+    sendErrorResponse(error, res);
+  } else if (Object.hasOwn(error, "errorResponse") && error.errorResponse.code === 11000) {
+    res.status(409).json({ error: "Duplicate entry not allowed" });
+    console.log(log.fail(custom) + "\n" + error.message + "\n");
+  } else if (error instanceof errors.CourseNotFoundError) {
+    sendErrorResponse(error, res);
+  } else if (error instanceof errors.ExistingPurchaseError) {
+    sendErrorResponse(error, res);
   } else {
     res.status(500).json({ error: custom });
     console.log(log.fail(custom) + "\n" + error.message + "\n");

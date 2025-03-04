@@ -1,9 +1,9 @@
-require("dotenv").config();
-
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET_USER = process.env.JWT_SECRET_USER;
 
 const { User } = require("../models/user.model");
+const { Purchase } = require("../models/purchase.model");
+const { Course } = require("../models/course.model");
 
 const { checkAndValidateErrors: handleError } = require("../errors/catch");
 
@@ -30,7 +30,7 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   try {
     const { user } = req.body;
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET_USER);
 
     res.setHeader("Authorization", token);
     res.setHeader("Access-Control-Expose-Headers", "Authorization");
@@ -42,4 +42,32 @@ const signin = async (req, res) => {
   }
 };
 
-module.exports = { signup, signin };
+const purchase = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const userId = req.user.id;
+
+    await Purchase.create({ courseId, userId });
+
+    res.status(200).json({ message: "Congratulations! You have purchased the course" });
+    console.log(log.handler("Course purchase successful"));
+  } catch (error) {
+    handleError(error, res, "Failed to purchase course");
+  }
+};
+
+const preview = async (req, res) => {
+  try {
+    const { purchases } = req;
+
+    const courses = await Course.find({
+      _id: { $in: purchases.map((purchase) => purchase.courseId) },
+    });
+
+    res.status(200).json({ courses });
+  } catch (error) {
+    handleError(error, res, "Unable to fetch courses bought by user");
+  }
+};
+
+module.exports = { signup, signin, purchase, preview };

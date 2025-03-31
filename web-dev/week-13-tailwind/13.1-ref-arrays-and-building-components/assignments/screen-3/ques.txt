@@ -1,0 +1,2 @@
+- when you input a number, cursor should auto matically move to the next
+- when you click backspace, cursor should move to the previous obe

@@ -16,6 +16,12 @@ async function main() {
   await pgClient.connect();
   const response = await pgClient.query("SELECT * FROM users;");
   console.log(response.rows);
+
+  const update = await pgClient.query(
+    "UPDATE users SET password='random1212' WHERE username='codmxde'"
+  );
+
+  console.log(update);
 }
 
 main();

@@ -1,5 +1,5 @@
 {
-  "name": "21.2-chat-app-turborepo",
+  "name": "chat-app",
   "private": true,
   "scripts": {
     "build": "turbo run build",

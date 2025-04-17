@@ -1,5 +1,5 @@
 {
-  "name": "test-turbo",
+  "name": "pnpm-turbo",
   "private": true,
   "scripts": {
     "build": "turbo run build",

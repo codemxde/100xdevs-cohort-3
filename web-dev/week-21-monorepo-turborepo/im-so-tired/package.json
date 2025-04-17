@@ -1,5 +1,5 @@
 {
-  "name": "pnpm-turbo",
+  "name": "im-so-tired",
   "private": true,
   "scripts": {
     "build": "turbo run build",
